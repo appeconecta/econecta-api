@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { auth } from "@/auth";
+
 import { deleteSpot, getSpotById, updateSpot } from "../service";
 import { spotUpdateSchema } from "../validation";
 
@@ -13,18 +15,24 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id: rawId } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Usuario nao autenticado" },
+        { status: 401 }
+      );
+    }
 
-    const parsedId = idParamSchema.safeParse({ id: rawId });
+    const parsedId = idParamSchema.safeParse({ id: params.id });
     if (!parsedId.success) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+      return NextResponse.json({ error: "ID invalido" }, { status: 400 });
     }
 
     const body = await req.json();
     const parsedBody = spotUpdateSchema.safeParse(body);
     if (!parsedBody.success) {
       return NextResponse.json(
-        { error: "Payload inválido", issues: parsedBody.error.format() },
+        { error: "Payload invalido", issues: parsedBody.error.format() },
         { status: 400 }
       );
     }
@@ -34,8 +42,15 @@ export async function PATCH(
     const existing = await getSpotById(id);
     if (!existing) {
       return NextResponse.json(
-        { error: "Foco de lixo não encontrado" },
+        { error: "Foco de lixo nao encontrado" },
         { status: 404 }
+      );
+    }
+
+    if (existing.registeredById !== session.user.id) {
+      return NextResponse.json(
+        { error: "Sem permissao para alterar este foco de lixo" },
+        { status: 403 }
       );
     }
 
@@ -52,14 +67,20 @@ export async function PATCH(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id: rawId } = await params;
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Usuario nao autenticado" },
+        { status: 401 }
+      );
+    }
 
-    const parsedId = idParamSchema.safeParse({ id: rawId });
+    const parsedId = idParamSchema.safeParse({ id: params.id });
     if (!parsedId.success) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+      return NextResponse.json({ error: "ID invalido" }, { status: 400 });
     }
 
     const { id } = parsedId.data;
@@ -67,8 +88,15 @@ export async function DELETE(
     const existing = await getSpotById(id);
     if (!existing) {
       return NextResponse.json(
-        { error: "Foco de lixo não encontrado" },
+        { error: "Foco de lixo nao encontrado" },
         { status: 404 }
+      );
+    }
+
+    if (existing.registeredById !== session.user.id) {
+      return NextResponse.json(
+        { error: "Sem permissao para deletar este foco de lixo" },
+        { status: 403 }
       );
     }
 
