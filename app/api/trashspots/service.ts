@@ -1,22 +1,42 @@
 import prisma from "@/lib/prisma";
-import { SpotInput } from "./validation";
+import { SpotInput, SpotUpdateInput } from "./validation";
 
 export async function listSpots() {
-  return prisma.trashSpot.findMany();
+  return prisma.trashSpot.findMany({ include: { location: true } });
 }
 
-export async function createSpot(data: SpotInput) {
-  return prisma.trashSpot.create({ data });
+export async function createSpot(data: SpotInput, userId: string) {
+  const { location, ...spotData } = data;
+
+  return prisma.trashSpot.create({
+    data: {
+      ...spotData,
+      location: { create: location },
+      registeredBy: { connect: { id: userId } },
+    },
+    include: { location: true },
+  });
 }
 
 export async function getSpotById(id: number) {
-  return prisma.trashSpot.findUnique({ where: { id } });
+  return prisma.trashSpot.findUnique({
+    where: { id },
+    include: { location: true },
+  });
 }
 
-export async function updateSpot(id: number, data: Partial<SpotInput>) {
+export async function updateSpot(id: number, data: SpotUpdateInput) {
+  const { location, ...spotData } = data;
+
+  const updateData: Record<string, unknown> = { ...spotData };
+  if (location) {
+    updateData.location = { update: location };
+  }
+
   return prisma.trashSpot.update({
     where: { id },
-    data,
+    data: updateData,
+    include: { location: true },
   });
 }
 

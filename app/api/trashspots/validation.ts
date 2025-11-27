@@ -19,9 +19,25 @@ const climate = z.enum([
 ]);
 const disposal = z.enum(["TRASH_BINS_AVAILABLE"]);
 
+const baseLocationSchema = z.object({
+  latitude: z
+    .number({ message: "Latitude deve ser numerica" })
+    .min(-90, "Latitude minima -90")
+    .max(90, "Latitude maxima 90"),
+  longitude: z
+    .number({ message: "Longitude deve ser numerica" })
+    .min(-180, "Longitude minima -180")
+    .max(180, "Longitude maxima 180"),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+  district: z.string().optional(),
+  postalCode: z.string().optional(),
+  formattedAddr: z.string().optional(),
+});
+
 export const spotSchema = z.object({
-  name: z.string().min(1, "Nome é obrigatório"),
-  location: z.string().min(1, "Endereço é obrigatório"),
+  name: z.string().min(1, "Nome obrigatorio"),
   description: z.string().optional(),
   stayDuration: stayDuration.optional(),
   vegetation: vegetation.optional(),
@@ -31,12 +47,33 @@ export const spotSchema = z.object({
   soil: z.array(soil).optional(),
   animals: z.array(animals).optional(),
   disposal: z.array(disposal).optional(),
+  location: baseLocationSchema,
 });
 
 export type SpotInput = z.infer<typeof spotSchema>;
+export type SpotUpdateInput = z.infer<typeof spotUpdateSchema>;
 
-export const spotUpdateSchema = spotSchema
-  .partial()
+const locationUpdateSchema = baseLocationSchema.partial().refine(
+  (data) => Object.keys(data).length > 0,
+  {
+    message: "Informe ao menos um campo em location",
+  }
+);
+
+export const spotUpdateSchema = z
+  .object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    stayDuration: stayDuration.optional(),
+    vegetation: vegetation.optional(),
+    terrain: terrain.optional(),
+    climate: climate.optional(),
+    water: z.array(water).optional(),
+    soil: z.array(soil).optional(),
+    animals: z.array(animals).optional(),
+    disposal: z.array(disposal).optional(),
+    location: locationUpdateSchema.optional(),
+  })
   .refine((data) => Object.keys(data).length > 0, {
-    message: "É preciso informar ao menos um campo para atualizar",
+    message: "Informe pelo menos um campo para atualizar",
   });

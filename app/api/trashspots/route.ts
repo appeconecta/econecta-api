@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { auth } from "@/auth";
+
 import { createSpot, listSpots } from "./service";
 import { spotSchema } from "./validation";
 
@@ -19,6 +21,15 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Usuario nao autenticado" },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const parsed = spotSchema.safeParse(body);
 
@@ -29,7 +40,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const spot = await createSpot(parsed.data);
+    const spot = await createSpot(parsed.data, session.user.id);
 
     return NextResponse.json({ data: spot }, { status: 201 });
   } catch (error) {
