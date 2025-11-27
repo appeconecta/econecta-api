@@ -1,4 +1,3 @@
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -8,24 +7,25 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 // User and Session
 model User {
-  id                String    @id @default(cuid())
-  name              String?
-  email             String?   @unique
-  emailVerified     DateTime?
-  image             String?
-  accounts          Account[]
-  sessions          Session[]
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
 
   // Relations
-  comments          Comment[]
-  confirmations     Confirmation[]
+  comments                  Comment[]
+  confirmations             Confirmation[]
+  registeredTrashSpots      TrashSpot[]       @relation("RegisteredBy")
+  registeredCollectionSpots CollectionSpots[] @relation("CollectionRegisteredBy")
 }
 
 model Account {
-  id                String    @id @default(cuid())
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -36,8 +36,8 @@ model Account {
   token_type        String?
   scope             String?
 
-  id_token          String?
-  session_state     String?
+  id_token      String?
+  session_state String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -55,24 +55,40 @@ model Session {
 
 // Trash Spot
 model TrashSpot {
-  id                Int             @id @default(autoincrement())
-  name              String
-  location          String
-  description       String?
-  createdAt         DateTime        @default(now())
+  id          Int      @id @default(autoincrement())
+  name        String
+  location    String
+  description String?
+  createdAt   DateTime @default(now())
 
-  stayDuration      StayDuration
-  vegetation        Vegetation
-  terrain           Terrain
-  climate           Climate
-  water             Water[]
-  soil              Soil[]
-  animals           Animal[]
-  disposal          Disposal[]
+  stayDuration StayDuration
+  vegetation   Vegetation
+  terrain      Terrain
+  climate      Climate
+  water        Water[]
+  soil         Soil[]
+  animals      Animal[]
+  disposal     Disposal[]
 
   // Relations
-  comments          Comment[]
-  confirmations     Confirmation[]
+  comments       Comment[]
+  confirmations  Confirmation[]
+  registeredById String?
+  registeredBy   User?          @relation("RegisteredBy", fields: [registeredById], references: [id], onDelete: SetNull)
+}
+
+model CollectionSpots {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  location  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  comments       Comment[]
+  confirmations  Confirmation[]
+  registeredById String?
+  registeredBy   User?          @relation("CollectionRegisteredBy", fields: [registeredById], references: [id], onDelete: SetNull)
 }
 
 enum StayDuration {
@@ -127,28 +143,33 @@ enum Disposal {
 
 // Comment
 model Comment {
-  id            Int           @id @default(autoincrement())
-  content       String
-  createdAt     DateTime      @default(now())
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
 
   // Relations
-  userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  trashSpotId   Int
-  trashSpot     TrashSpot     @relation(fields: [trashSpotId], references: [id], onDelete: Cascade)
+  trashSpotId      Int?
+  trashSpot        TrashSpot?       @relation(fields: [trashSpotId], references: [id], onDelete: Cascade)
+  collectionSpotId Int?
+  collectionSpot   CollectionSpots? @relation(fields: [collectionSpotId], references: [id], onDelete: Cascade)
 }
 
 model Confirmation {
-  id            Int        @id @default(autoincrement())
-  confirmedAt   DateTime   @default(now())
+  id          Int      @id @default(autoincrement())
+  confirmedAt DateTime @default(now())
 
   // Relations
-  userId        String
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  trashSpotId   Int
-  trashSpot     TrashSpot  @relation(fields: [trashSpotId], references: [id], onDelete: Cascade)
+  trashSpotId      Int?
+  trashSpot        TrashSpot?       @relation(fields: [trashSpotId], references: [id], onDelete: Cascade)
+  collectionSpotId Int?
+  collectionSpot   CollectionSpots? @relation(fields: [collectionSpotId], references: [id], onDelete: Cascade)
 
   @@unique([trashSpotId, userId])
+  @@unique([collectionSpotId, userId])
 }
