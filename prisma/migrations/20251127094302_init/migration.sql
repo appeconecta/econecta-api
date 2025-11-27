@@ -65,7 +65,8 @@ CREATE TABLE "Session" (
 CREATE TABLE "TrashSpot" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "location" TEXT NOT NULL,
+    "latitude" DOUBLE PRECISION NOT NULL,
+    "longitude" DOUBLE PRECISION NOT NULL,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "stayDuration" "StayDuration" NOT NULL,
@@ -76,8 +77,37 @@ CREATE TABLE "TrashSpot" (
     "soil" "Soil"[],
     "animals" "Animal"[],
     "disposal" "Disposal"[],
+    "locationId" INTEGER NOT NULL,
+    "registeredById" TEXT,
 
     CONSTRAINT "TrashSpot_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CollectionSpots" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "locationId" INTEGER NOT NULL,
+    "registeredById" TEXT,
+
+    CONSTRAINT "CollectionSpots_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Location" (
+    "id" SERIAL NOT NULL,
+    "latitude" DOUBLE PRECISION NOT NULL,
+    "longitude" DOUBLE PRECISION NOT NULL,
+    "city" TEXT,
+    "state" TEXT,
+    "country" TEXT,
+    "district" TEXT,
+    "postalCode" TEXT,
+    "formattedAddr" TEXT,
+
+    CONSTRAINT "Location_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -86,9 +116,21 @@ CREATE TABLE "Comment" (
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
-    "trashSpotId" INTEGER NOT NULL,
+    "trashSpotId" INTEGER,
+    "collectionSpotId" INTEGER,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Confirmation" (
+    "id" SERIAL NOT NULL,
+    "confirmedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" TEXT NOT NULL,
+    "trashSpotId" INTEGER,
+    "collectionSpotId" INTEGER,
+
+    CONSTRAINT "Confirmation_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -100,6 +142,12 @@ CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provi
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Confirmation_trashSpotId_userId_key" ON "Confirmation"("trashSpotId", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Confirmation_collectionSpotId_userId_key" ON "Confirmation"("collectionSpotId", "userId");
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -107,7 +155,31 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "TrashSpot" ADD CONSTRAINT "TrashSpot_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TrashSpot" ADD CONSTRAINT "TrashSpot_registeredById_fkey" FOREIGN KEY ("registeredById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CollectionSpots" ADD CONSTRAINT "CollectionSpots_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CollectionSpots" ADD CONSTRAINT "CollectionSpots_registeredById_fkey" FOREIGN KEY ("registeredById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_trashSpotId_fkey" FOREIGN KEY ("trashSpotId") REFERENCES "TrashSpot"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_collectionSpotId_fkey" FOREIGN KEY ("collectionSpotId") REFERENCES "CollectionSpots"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Confirmation" ADD CONSTRAINT "Confirmation_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Confirmation" ADD CONSTRAINT "Confirmation_trashSpotId_fkey" FOREIGN KEY ("trashSpotId") REFERENCES "TrashSpot"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Confirmation" ADD CONSTRAINT "Confirmation_collectionSpotId_fkey" FOREIGN KEY ("collectionSpotId") REFERENCES "CollectionSpots"("id") ON DELETE CASCADE ON UPDATE CASCADE;
