@@ -27,7 +27,9 @@ export async function PATCH(
       );
     }
 
-    const parsedId = idParamSchema.safeParse({ id: params.id });
+    const { id: rawId } = await params;
+    const parsedId = idParamSchema.safeParse({ id: Number(rawId) });
+
     if (!parsedId.success) {
       return NextResponse.json({ error: "ID invalido" }, { status: 400 });
     }
@@ -82,7 +84,9 @@ export async function DELETE(
       );
     }
 
-    const parsedId = idParamSchema.safeParse({ id: params.id });
+    const { id: rawId } = await params;
+    const parsedId = idParamSchema.safeParse({ id: Number(rawId) });
+
     if (!parsedId.success) {
       return NextResponse.json({ error: "ID invalido" }, { status: 400 });
     }
