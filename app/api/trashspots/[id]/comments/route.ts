@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
 
 import { listCommentsByTrashSpotId } from "../../../comments/service";
@@ -9,8 +9,8 @@ const idParamSchema = z.object({
 });
 
 export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: rawId } = await params;

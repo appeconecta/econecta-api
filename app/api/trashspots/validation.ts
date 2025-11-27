@@ -4,11 +4,11 @@ const stayDuration = z.enum([
   "UP_TO_5_DAYS",
   "SEVERAL_WEEKS",
   "SEVERAL_MONTHS",
-]);
-const vegetation = z.enum(["NONE", "LOW", "TALL"]);
+]).optional();
+const vegetation = z.enum(["NONE", "LOW", "TALL"]).optional();
 const water = z.enum(["ABUNDANT", "FRESH", "BRACKISH", "NONE"]);
 const soil = z.enum(["FERTILE", "ROCKY", "COMPACT"]);
-const terrain = z.enum(["FLAT", "STEEP", "INACCESSIBLE"]);
+const terrain = z.enum(["FLAT", "STEEP", "INACCESSIBLE"]).optional();
 const animals = z.enum(["VARIOUS", "FLIES", "HORSES", "PIGS"]);
 const climate = z.enum([
   "TROPICAL",
@@ -16,7 +16,7 @@ const climate = z.enum([
   "ARCTIC",
   "UNKNOWN",
   "NO_RESPONSE",
-]);
+]).optional();
 const disposal = z.enum(["TRASH_BINS_AVAILABLE"]);
 
 const baseLocationSchema = z.object({

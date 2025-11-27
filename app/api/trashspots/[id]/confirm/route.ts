@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -13,8 +13,8 @@ const idParamSchema = z.object({
 });
 
 export async function POST(
-  _req: Request,
-  { params }: { params: { id: number } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -64,8 +64,8 @@ export async function POST(
 }
 
 export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();

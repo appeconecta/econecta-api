@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
@@ -11,8 +11,8 @@ const idParamSchema = z.object({
 });
 
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -49,8 +49,6 @@ export async function PATCH(
       );
     }
 
-    console.log("Existing registeredById:", existing);
-    console.log("Session user id:", session.user.id);
     if (existing.registeredById !== session.user.id) {
       return NextResponse.json(
         { error: "Sem permissao para alterar este foco de lixo" },
@@ -71,7 +69,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();

@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { SpotInput, SpotUpdateInput } from "./validation";
 
@@ -6,14 +7,37 @@ export async function listSpots() {
 }
 
 export async function createSpot(data: SpotInput, userId: string) {
-  const { location, ...spotData } = data;
+  const {
+    location,
+    water = [],
+    soil = [],
+    animals = [],
+    disposal = [],
+    stayDuration,
+    vegetation,
+    terrain,
+    climate,
+    name,
+    description,
+  } = data;
+
+  const createData = {
+    name,
+    description: description ?? undefined,
+    stayDuration: stayDuration,
+    vegetation: vegetation,
+    terrain: terrain,
+    climate: climate,
+    water,
+    soil,
+    animals,
+    disposal,
+    location: { create: location },
+    registeredBy: { connect: { id: userId } },
+  };
 
   return prisma.trashSpot.create({
-    data: {
-      ...spotData,
-      location: { create: location },
-      registeredBy: { connect: { id: userId } },
-    },
+    data: createData as Prisma.TrashSpotCreateInput,
     include: { location: true },
   });
 }
