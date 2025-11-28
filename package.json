@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev -H 0.0.0.0",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -13,6 +13,7 @@
     "@prisma/adapter-pg": "^5.22.0",
     "@prisma/client": "^5.22.0",
     "firebase-admin": "^13.6.0",
+    "jsonwebtoken": "^9.0.2",
     "next": "16.0.4",
     "next-auth": "^5.0.0-beta.30",
     "prisma": "^5.22.0",
