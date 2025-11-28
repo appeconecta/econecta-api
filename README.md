@@ -1,14 +1,20 @@
-Econecta API (Next.js)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="/.github/cover.png">
+  <source media="(prefers-color-scheme: light)" srcset="/.github/cover_light.png">
+    <img alt="econecta" src="/.github/cover_light.png">
+</picture>
+
+## 📱 Sobre
 
 API em Next.js para cadastro de focos de lixo e pontos de coleta, usando Prisma/PostgreSQL e NextAuth (JWT) com provider Google.
 
-## Setup rapido
+## Setup rápido
 - Clone o projeto, instale deps (`npm install`) e configure `.env` com `DATABASE_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET` e credenciais do Firebase (`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `FIREBASE_STORAGE_BUCKET`).
 - Rode migrations/seed conforme necessario e inicie com `npm run dev`.
 
-## Autenticacao
-- Sessao gerenciada pelo NextAuth em `/api/auth/[...nextauth]` (provider Google, estrategia JWT).
-- O callback de sessao inclui `sessionToken` (JWT) assinado com `NEXTAUTH_SECRET`.
+## Autenticação
+- Sessão gerenciada pelo NextAuth em `/api/auth/[...nextauth]` (provider Google, estrategia JWT).
+- O callback de sessão inclui `sessionToken` (JWT) assinado com `NEXTAUTH_SECRET`.
 - Endpoints protegidos exigem header `Authorization: Bearer <sessionToken>`.
 
 ## Modelos (schema.prisma)
